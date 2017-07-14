@@ -1,6 +1,6 @@
 import json
 import spotipy
-import spotipy.util as util
+from spotipy.oauth2 import SpotifyClientCredentials
 from flask import Flask, request, Response
 
 app = Flask(__name__)
@@ -14,9 +14,12 @@ def index():
 
 @app.route("/api/search", methods = ["GET"])
 def artists_get():
-	scope = 'user-library-read'
-	token = util.prompt_for_user_token('alinaverbenchuk', scope)
-	spotify = spotipy.Spotify(auth=token)
+	# scope = 'user-library-read'
+	# token = util.prompt_for_user_token('alinaverbenchuk', scope)
+	# spotify = spotipy.Spotify(auth=token)
+
+	client_credentials_manager = SpotifyClientCredentials()
+	spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
 	name = request.args.get('name')
 	results = spotify.search(q='artist:' + name, type = 'artist')
