@@ -24,9 +24,7 @@ def artists_get():
 	name = request.args.get('name')
 	results = spotify.search(q='artist:' + name, type = 'artist')
 	print(results)
-	data = json.dumps({
-		'name': name
-	})
+	data = json.dumps(results)
 	return Response(data, 200, mimetype="application/json")
 
 
