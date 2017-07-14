@@ -5,13 +5,7 @@ from flask import Flask, request, Response
 
 app = Flask(__name__)
 
-scope = 'user-library-read'
-token = util.prompt_for_user_token('alinaverbenchuk', scope)
-spotify = spotipy.Spotify(auth=token)
-
-
 @app.route("/")
-
 def index():
 	data = json.dumps({
 		'message': 'successful'
@@ -20,6 +14,10 @@ def index():
 
 @app.route("/api/search", methods = ["GET"])
 def artists_get():
+	scope = 'user-library-read'
+	token = util.prompt_for_user_token('alinaverbenchuk', scope)
+	spotify = spotipy.Spotify(auth=token)
+
 	name = request.args.get('name')
 	results = spotify.search(q='artist:' + name, type = 'artist')
 	print(results)
