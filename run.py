@@ -2,6 +2,7 @@ import json
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from flask import Flask, request, Response
+from decorators import crossdomain
 
 app = Flask(__name__)
 client_credentials_manager = SpotifyClientCredentials()
@@ -9,6 +10,7 @@ spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
 
 @app.route("/")
+@crossdomain(origin='*')
 def index():
 	data = json.dumps({
 		'message': 'successful'
@@ -16,6 +18,7 @@ def index():
 	return Response(data, 200, mimetype="application/json")
 
 @app.route("/api/search", methods = ["GET"])
+@crossdomain(origin='*')
 def artists_get():
 	
 	name = request.args.get('name')
@@ -30,6 +33,7 @@ def artists_get():
 
 
 @app.route("/api/album_tracks", methods = ["GET"])
+@crossdomain(origin='*')
 def album_tracks_get():
 	album_id = request.args.get('album_id')
 	tracks = spotify.album_tracks(album_id)
