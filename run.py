@@ -1,6 +1,7 @@
 import json
 import flask
 import spotipy
+import requests
 from spotipy.oauth2 import SpotifyClientCredentials
 from flask import Flask, request, Response
 from decorators import crossdomain
@@ -14,13 +15,13 @@ client_credentials_manager = SpotifyClientCredentials()
 spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
 
-# @app.route("/")
-# @crossdomain(origin='*')
-# def index():
-# 	data = json.dumps({
-# 		'message': 'successful'
-# 		})
-# 	return Response(data, 200, mimetype="application/json")
+@app.route("/")
+@crossdomain(origin='*')
+def index():
+	data = json.dumps({
+		'message': 'successful'
+		})
+	return Response(data, 200, mimetype="application/json")
 
 @app.route("/api/search", methods = ["GET"])
 @crossdomain(origin='*')
@@ -42,39 +43,40 @@ def artists_get():
 def album_tracks_get():
 	album_id = request.args.get('album_id')
 	tracks = spotify.album_tracks(album_id)
-	data = json.dumps(tracks)
+
+	new_response = {'items': []}
+
+	for track in tracks['items']:
+	    name_of_song = track['name']
+	    name_of_artist = track['artists'][0]['name']
+	    spotify_preview_url = track['preview_url']
+	    spotify_external_urls = track['external_urls']['spotify']
+
+	    track_query = name_of_song + ' ' + name_of_artist
+	    r = requests.get("https://www.googleapis.com/youtube/v3/search?key=AIzaSyDtVCBq96FsRaLCDibG_hNVMvJg_hwEMf4&part=snippet&type=video&q=" + track_query)
+	    youtube_response = r.json()
+
+	    video_id = youtube_response['items'][0]['id']['videoId']
+
+
+	    new_response['items'].append({
+	    	'name_of_song': name_of_song,
+	    	'name_of_artist': name_of_artist, 
+	    	'spotify_preview_url': spotify_preview_url,
+	    	'spotify_external_urls': spotify_external_urls,
+	    	'video_id': video_id
+	    	})
+	# Fetch Youtube track
+	# looping through the tracks!
+	# get the artist name
+	# get the song name
+	# seach by combinatin of artist name + song name
+	# when you get the YOUtube infor, put that inside the "tracks" some how!
+	# What does my client need [front end]?
+	data = json.dumps(new_response)
 	return Response(data, 200, mimetype="application/json")
 
 
-@app.route('/')
-@crossdomain(origin='*')
-def index():
-  if 'credentials' not in flask.session:
-    return flask.redirect(flask.url_for('oauth2callback'))
-  credentials = client.OAuth2Credentials.from_json(flask.session['credentials'])
-  if credentials.access_token_expired:
-    return flask.redirect(flask.url_for('oauth2callback'))
-  else:
-    http_auth = credentials.authorize(httplib2.Http())
-    youtube = discovery.build('youtube', 'v3', http_auth)
-    channel = youtube.channels().list(mine=True, part='snippet').execute()
-    return json.dumps(channel)
-
-@app.route('/oauth2callback')
-def oauth2callback():
-  flow = client.flow_from_clientsecrets(
-      'client_secrets.json',
-      scope='https://www.googleapis.com/auth/youtube.force-ssl',
-      redirect_uri=flask.url_for('oauth2callback', _external=True),
-      include_granted_scopes=True)
-  if 'code' not in flask.request.args:
-    auth_uri = flow.step1_get_authorize_url()
-    return flask.redirect(auth_uri)
-  else:
-    auth_code = flask.request.args.get('code')
-    credentials = flow.step2_exchange(auth_code)
-    flask.session['credentials'] = credentials.to_json()
-    return flask.redirect(flask.url_for('index'))
 
 
 if __name__ == '__main__':
