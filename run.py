@@ -51,6 +51,8 @@ def album_tracks_get():
 	    name_of_artist = track['artists'][0]['name']
 	    spotify_preview_url = track['preview_url']
 	    spotify_external_urls = track['external_urls']['spotify']
+	    uri = track['uri']
+
 
 	    track_query = name_of_song + ' ' + name_of_artist
 	    r = requests.get("https://www.googleapis.com/youtube/v3/search?key=AIzaSyDtVCBq96FsRaLCDibG_hNVMvJg_hwEMf4&part=snippet&type=video&q=" + track_query)
@@ -64,6 +66,7 @@ def album_tracks_get():
 	    	'name_of_artist': name_of_artist, 
 	    	'spotify_preview_url': spotify_preview_url,
 	    	'spotify_external_urls': spotify_external_urls,
+	    	'uri': uri,
 	    	'video_id': video_id
 	    	})
 	# Fetch Youtube track
@@ -71,8 +74,6 @@ def album_tracks_get():
 	# get the artist name
 	# get the song name
 	# seach by combinatin of artist name + song name
-	# when you get the YOUtube infor, put that inside the "tracks" some how!
-	# What does my client need [front end]?
 	data = json.dumps(new_response)
 	return Response(data, 200, mimetype="application/json")
 
